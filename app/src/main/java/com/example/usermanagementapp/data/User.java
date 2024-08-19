@@ -8,8 +8,9 @@ public class User {
     @PrimaryKey
     public long id;
     public String email;
-    public String firstName;
-    public String lastName;
+    //public String firstName;
+    //public String lastName;
+    public String Name;
     public String job;
     public String avatar;
 
@@ -18,7 +19,7 @@ public class User {
     }
 
     public void setName(String name) {
-        this.firstName = name;
+        this.Name = name;
     }
 
     public void setEmail(String name) {
@@ -33,5 +34,31 @@ public class User {
     public void setId(long id) {
         this.id  = id;
 
+    }
+    public String getName() {
+        return Name;
+    }
+
+
+//    public void setName(String name) {
+//        String[] nameParts = name.split(" ");
+//        this.firstName = nameParts[0];
+//        if (nameParts.length > 1) {
+//            this.lastName = nameParts[1];
+//        } else {
+//            this.lastName = "";
+//        }
+//    }
+//    public String getFirstName() {
+//        return firstName;
+//    }
+//
+//    public String getLastName() {
+//        return lastName;
+//    }
+
+
+    public String getAvatar() {
+        return avatar;
     }
 }

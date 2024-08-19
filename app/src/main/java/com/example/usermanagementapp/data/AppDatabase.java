@@ -5,18 +5,22 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import android.content.Context;
 
-@Database(entities = {User.class}, version = 1)
+@Database(entities = {User.class}, version = 2) // Increase the version number
 public abstract class AppDatabase extends RoomDatabase {
     public abstract UserDao userDao();
 
-    private static AppDatabase INSTANCE;
+    private static volatile AppDatabase INSTANCE;
 
     public static AppDatabase getDatabase(Context context) {
         if (INSTANCE == null) {
-            INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
-                            AppDatabase.class, "user_database")
-                    .allowMainThreadQueries() // This is just for simplicity. For production, use async queries.
-                    .build();
+            synchronized (AppDatabase.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
+                                    AppDatabase.class, "user_database")
+                            .fallbackToDestructiveMigration() // Add this line
+                            .build();
+                }
+            }
         }
         return INSTANCE;
     }

@@ -13,8 +13,14 @@ public interface UserDao {
     @Insert
     void insert(User user);
 
+    @Insert
+    void insertAll(List<User> users);
+
     @Query("SELECT * FROM User")
     List<User> getAllUsers();
+
+    @Query("SELECT * FROM User WHERE id = :id LIMIT 1")
+    User getUserById(int id);
 
     @Delete
     void delete(User user);

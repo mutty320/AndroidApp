@@ -6,14 +6,14 @@ import androidx.room.PrimaryKey;
 @Entity
 public class User {
     @PrimaryKey
-    public int id;
+    public long id;
     public String email;
     public String firstName;
     public String lastName;
     public String job;
     public String avatar;
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
@@ -30,7 +30,7 @@ public class User {
         this.job =  job;
 
     }
-    public void setId(int id) {
+    public void setId(long id) {
         this.id  = id;
 
     }

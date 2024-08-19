@@ -1,10 +1,12 @@
 package com.example.usermanagementapp;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -25,6 +27,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 import java.util.List;
+import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -47,8 +50,14 @@ public class MainActivity extends AppCompatActivity {
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
+        // Initialize the user list
+        userList = new ArrayList<>();
+        userAdapter = new UserAdapter(userList);
+        recyclerView.setAdapter(userAdapter);
+
         // Initialize Room database
         db = AppDatabase.getDatabase(this);
+        clearDatabase();
 
         // Initialize Retrofit API
         api = ApiClient.getRetrofitInstance().create(ReqResApi.class);
@@ -85,15 +94,19 @@ public class MainActivity extends AppCompatActivity {
     private void loadUsersFromApi() {
         Call<UsersResponse> call = api.getUsers(2);
         call.enqueue(new Callback<UsersResponse>() {
+            @SuppressLint("NotifyDataSetChanged")
             @Override
             public void onResponse(@NonNull Call<UsersResponse> call, @NonNull Response<UsersResponse> response) {
                 if (response.isSuccessful()) {
                     UsersResponse usersResponse = response.body();
                     if (usersResponse != null) {
-                        userList = usersResponse.getData();
-                        userAdapter = new UserAdapter(userList);
-                        recyclerView.setAdapter(userAdapter);
-                        saveUsersToDatabase(userList);
+                        userList.addAll(usersResponse.getData());
+                        //userList = usersResponse.getData();
+                        //userAdapter = new UserAdapter(userList);
+                        //recyclerView.setAdapter(userAdapter);
+                        userAdapter.notifyDataSetChanged();
+                        //saveUsersToDatabase(userList);
+                        saveUsersToDatabase(usersResponse.getData());
                     }
                 } else {
                     Log.d("MainActivity", "Request failed");
@@ -108,9 +121,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void saveUsersToDatabase(List<User> users) {
-        for (User user : users) {
-            db.userDao().insert(user);
-        }
+        Executors.newSingleThreadExecutor().execute(() -> {
+            for (User user : users) {
+                db.userDao().insert(user);
+            }
+        });
     }
 
     private void addUser() {
@@ -131,9 +146,13 @@ public class MainActivity extends AppCompatActivity {
                             user.setName(newUser.getName());
                             user.setJob(newUser.getJob());
                             user.setId(newUser.getId());
-                            db.userDao().insert(user);
-                            userList.add(user);
-                            userAdapter.notifyItemInserted(userList.size() - 1);
+                            Executors.newSingleThreadExecutor().execute(() -> {
+                                db.userDao().insert(user);
+                                runOnUiThread(() -> {
+                                    userList.add(user);
+                                    userAdapter.notifyItemInserted(userList.size() - 1);
+                                });
+                            });
                         }
                     }
                 }
@@ -145,7 +164,9 @@ public class MainActivity extends AppCompatActivity {
             });
         }
     }
-
+    private void clearDatabase() {
+        Executors.newSingleThreadExecutor().execute(() -> db.userDao().clearAll());
+    }
 //    private void updateUser() {
 //        String name = nameEditText.getText().toString();
 //        String job = jobEditText.getText().toString();

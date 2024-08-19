@@ -4,7 +4,7 @@ public class UserResponse {
 
     private String name;
     private String job;
-    private int id;
+    private String id;
     private String createdAt;
 
 
@@ -20,8 +20,8 @@ public class UserResponse {
     public String getJob() {
         return job;
     }
-    public int getId() {
-        return id;
+    public long getId() {
+        return Long.parseLong(id);
     }
 
 }

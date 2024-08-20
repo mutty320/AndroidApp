@@ -15,6 +15,7 @@ public interface MainContract {
     interface Presenter {
         void loadUsers();
         void addUser(String name, String job);
-        void deleteUser(User user);
+        void updateUser(String name);
+        void deleteUser(String name);
     }
 }

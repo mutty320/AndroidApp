@@ -1,9 +1,9 @@
 package com.example.usermanagementapp.ui.main;
 
-import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -29,39 +29,40 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Initialize UI components
         nameEditText = findViewById(R.id.nameEditText);
         jobEditText = findViewById(R.id.jobEditText);
         recyclerView = findViewById(R.id.recyclerView);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        userAdapter = new UserAdapter(); // This remains in the `data` package
+        userAdapter = new UserAdapter();
         recyclerView.setAdapter(userAdapter);
 
-        // Initialize Presenter
         AppDatabase db = AppDatabase.getDatabase(this);
 
-        // Clear the database on startup
+        // Clear database in the background
         clearDatabase(db);
 
         presenter = new MainPresenter(this, db);
-
-        // Load initial users
         presenter.loadUsers();
 
-        // Set up button click listeners
         Button addButton = findViewById(R.id.addButton);
         addButton.setOnClickListener(v -> {
             String name = nameEditText.getText().toString();
             String job = jobEditText.getText().toString();
-            presenter.addUser(name, job);
+            if (!name.isEmpty() && !job.isEmpty()) {
+                presenter.addUser(name, job);
+            } else {
+                showError("Please provide both name and job");
+            }
         });
 
         Button deleteButton = findViewById(R.id.deleteButton);
         deleteButton.setOnClickListener(v -> {
-            User lastUser = userAdapter.getLastUser();
-            if (lastUser != null) {
-                presenter.deleteUser(lastUser);
+            String name = nameEditText.getText().toString();
+            if (!name.isEmpty()) {
+                presenter.deleteUser(name);
+            } else {
+                showError("Please provide a name");
             }
         });
     }
@@ -87,9 +88,6 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
 
     @Override
     public void showError(String message) {
-        // Handle error (e.g., show a Toast or Snackbar)
-        runOnUiThread(() -> {
-            // Code to display error message to the user
-        });
+        runOnUiThread(() -> Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show());
     }
 }

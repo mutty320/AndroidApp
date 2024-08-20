@@ -15,14 +15,12 @@ public interface ReqResApi {
     @GET("api/users")
     Call<UsersResponse> getUsers(@Query("page") int page);
 
-    @POST("api/users/new")
+    @POST("api/users")
     Call<UserResponse> createUser(@Body UserRequest userRequest);
 
     @PUT("api/users/{id}")
-    Call<UserResponse> updateUser(@Path("id") int userId, @Body UserRequest userRequest);
+    Call<UpdateResponse> updateUser(@Path("id") long userId, @Body UserRequest userRequest);
 
     @DELETE("api/users/{id}")
-    Call<Void> deleteUser(@Path("id") int userId);
-
-
+    Call<Void> deleteUser(@Path("id") long userId);
 }

@@ -38,6 +38,9 @@ public class User {
     public String getName() {
         return Name;
     }
+public String getJob() {
+        return job;
+    }
 
 
 //    public void setName(String name) {

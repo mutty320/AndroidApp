@@ -107,6 +107,39 @@ public class MainPresenter implements MainContract.Presenter {
         });
     }
 
+    @Override
+    public void addUser(User user) {
+        Executors.newSingleThreadExecutor().execute(() -> {
+            UserRequest userRequest = new UserRequest(user.getFirstName() + " " + user.getLastName(), user.getJob());
+            api.createUser(userRequest).enqueue(new Callback<UserResponse>() {
+                @Override
+                public void onResponse(Call<UserResponse> call, Response<UserResponse> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        long newUserId = response.body().getId();
+
+                        // Move the database check to a background thread
+                        Executors.newSingleThreadExecutor().execute(() -> {
+                            if (db.userDao().getUserById((int) newUserId) == null) {
+                                user.setId(newUserId);
+                                db.userDao().insert(user);
+                                runOnMainThread(() -> view.showUserAdded(user));
+                            } else {
+                                runOnMainThread(() -> view.showError("User ID already exists."));
+                            }
+                        });
+                    } else {
+                        runOnMainThread(() -> view.showError("Failed to create user"));
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<UserResponse> call, Throwable t) {
+                    runOnMainThread(() -> view.showError("API call failed: " + t.getMessage()));
+                }
+            });
+        });
+    }
+
 
     @Override
     public void deleteUser(User user) {

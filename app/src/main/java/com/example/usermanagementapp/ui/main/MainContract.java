@@ -15,7 +15,7 @@ public interface MainContract {
 
     interface Presenter {
         void loadUsers();
-        //void addUser(User user);
+        void addUser(User user);
         void updateUser(User user);
         void deleteUser(User user);
     }

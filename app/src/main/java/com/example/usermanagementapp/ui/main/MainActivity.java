@@ -48,45 +48,45 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
 
         presenter.loadUsers();
 
-//        Button addButton = findViewById(R.id.addButton);
-//        addButton.setOnClickListener(v -> showAddUserForm());
+       Button addButton = findViewById(R.id.addButton);
+       addButton.setOnClickListener(v -> showAddUserForm());
 
     }
 
-//    private void showAddUserForm() {
-//        // Inflate the add user form
-//        LayoutInflater inflater = LayoutInflater.from(this);
-//        View formView = inflater.inflate(R.layout.dialog_update_user, null);
-//
-//        // Set up the form fields
-//        EditText firstNameEditText = formView.findViewById(R.id.editTextFirst_Name);
-//        EditText lastNameEditText = formView.findViewById(R.id.editTextLast_Name);
-//        EditText jobEditText = formView.findViewById(R.id.editTextJob);
-//        EditText emailEditText = formView.findViewById(R.id.editTextEmail);
-//
-//        // Show the dialog
-//        new AlertDialog.Builder(this)
-//                .setTitle("Add User")
-//                .setView(formView)
-//                .setPositiveButton("Save", (dialog, which) -> {
-//                    // Collect the user input
-//                    String firstName = firstNameEditText.getText().toString();
-//                    String lastName = lastNameEditText.getText().toString();
-//                    String job = jobEditText.getText().toString();
-//                    String email = emailEditText.getText().toString();
-//
-//                    // Create a new user and call the presenter to add it
-//                    User newUser = new User();
-//                    newUser.setFirstName(firstName);
-//                    newUser.setLastName(lastName);
-//                    newUser.setJob(job);
-//                    newUser.setEmail(email);
-//
-//                    presenter.addUser(newUser);
-//                })
-//                .setNegativeButton("Cancel", null)
-//                .show();
-//    }
+    private void showAddUserForm() {
+        // Inflate the add user form
+        LayoutInflater inflater = LayoutInflater.from(this);
+        View formView = inflater.inflate(R.layout.dialog_update_user, null);
+
+        // Set up the form fields
+        EditText firstNameEditText = formView.findViewById(R.id.editTextFirst_Name);
+        EditText lastNameEditText = formView.findViewById(R.id.editTextLast_Name);
+        EditText jobEditText = formView.findViewById(R.id.editTextJob);
+        EditText emailEditText = formView.findViewById(R.id.editTextEmail);
+
+        // Show the dialog
+        new AlertDialog.Builder(this)
+                .setTitle("Add User")
+                .setView(formView)
+                .setPositiveButton("Save", (dialog, which) -> {
+                    // Collect the user input
+                    String firstName = firstNameEditText.getText().toString();
+                    String lastName = lastNameEditText.getText().toString();
+                    String job = jobEditText.getText().toString();
+                    String email = emailEditText.getText().toString();
+
+                    // Create a new user and call the presenter to add it
+                    User newUser = new User();
+                    newUser.setFirstName(firstName);
+                    newUser.setLastName(lastName);
+                    newUser.setJob(job);
+                    newUser.setEmail(email);
+
+                    presenter.addUser(newUser);
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
 
     private void showUpdateForm(User user) {
         View formView = getLayoutInflater().inflate(R.layout.dialog_update_user, null);

@@ -3,6 +3,7 @@ package com.example.usermanagementapp.data;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -11,15 +12,19 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.usermanagementapp.R;
+import com.example.usermanagementapp.ui.main.MainContract;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
     private List<User> users;
+    private MainContract.Presenter presenter;
+
 
     // Constructor now initializes the user list if null
-    public UserAdapter() {
+    public UserAdapter(MainContract.Presenter presenter) {
+        this.presenter = presenter;
         this.users = new ArrayList<>();
     }
 
@@ -35,7 +40,17 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
     public void onBindViewHolder(ViewHolder holder, int position) {
         User user = users.get(position);
         holder.textViewName.setText(user.getName());
+        holder.textViewEmail.setText(user.getEmail()); // Bind email data
         Glide.with(holder.itemView.getContext()).load(user.getAvatar()).into(holder.imageView);
+        // Set the delete button action
+        holder.buttonDelete.setOnClickListener(v -> {
+            presenter.deleteUser(user);
+        });
+
+        // Set the update button action (similar to delete, if needed)
+        holder.buttonUpdate.setOnClickListener(v -> {
+            // Implement the update functionality here
+        });
     }
 
     @Override
@@ -75,11 +90,17 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
     public class ViewHolder extends RecyclerView.ViewHolder {
         public TextView textViewName;
         public ImageView imageView;
+        public TextView textViewEmail;
+        public Button buttonUpdate;
+        public Button buttonDelete;
 
         public ViewHolder(View itemView) {
             super(itemView);
             textViewName = itemView.findViewById(R.id.textViewName);
+            textViewEmail = itemView.findViewById(R.id.textViewEmail);
             imageView = itemView.findViewById(R.id.imageView);
+            buttonUpdate = itemView.findViewById(R.id.buttonUpdate);
+            buttonDelete = itemView.findViewById(R.id.buttonDelete);
         }
     }
 }

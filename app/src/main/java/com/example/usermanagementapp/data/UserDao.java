@@ -31,6 +31,6 @@ public interface UserDao {
     @Query("DELETE FROM User")
     void clearAll();
 
-    @Query("SELECT * FROM User WHERE Name = :name LIMIT 1")
+    @Query("SELECT * FROM User WHERE first_name = :name LIMIT 1")
     User getUserByName(String name);
 }

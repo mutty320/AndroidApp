@@ -16,6 +16,6 @@ public interface MainContract {
         void loadUsers();
         void addUser(String name, String job);
         void updateUser(String name);
-        void deleteUser(String name);
+        void deleteUser(User user);
     }
 }

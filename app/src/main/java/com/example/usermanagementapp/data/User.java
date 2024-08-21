@@ -8,9 +8,9 @@ public class User {
     @PrimaryKey
     public long id;
     public String email;
-    //public String firstName;
-    //public String lastName;
-    public String Name;
+    public String first_name;
+    public String last_name;
+    //public String Name;
     public String job;
     public String avatar;
 
@@ -18,12 +18,17 @@ public class User {
         return id;
     }
 
-    public void setName(String name) {
-        this.Name = name;
-    }
+//    public void setName(String name) {
+//        this.Name = name;
+//    }
 
     public void setEmail(String name) {
         this.email = name + "@reqres.in";
+
+    }
+
+    public String getEmail() {
+        return email;
 
     }
 
@@ -36,9 +41,9 @@ public class User {
 
     }
     public String getName() {
-        return Name;
+        return first_name + " " +last_name;
     }
-public String getJob() {
+    public String getJob() {
         return job;
     }
 

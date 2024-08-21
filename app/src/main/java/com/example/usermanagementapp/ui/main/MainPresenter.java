@@ -2,6 +2,7 @@ package com.example.usermanagementapp.ui.main;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -22,7 +23,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MainPresenter implements MainContract.Presenter {
-
+    private static final String TAG = "MainActivity";
     private final MainContract.View view;
     private final AppDatabase db;
     private final ReqResApi api;
@@ -51,6 +52,9 @@ public class MainPresenter implements MainContract.Presenter {
                     List<User> usersFromApi = response.body().getData();
                     Executors.newSingleThreadExecutor().execute(() -> {
                         for (User user : usersFromApi) {
+
+                            Log.d(TAG, user.last_name);
+
                             User existingUser = db.userDao().getUserById((int) user.getId());
                             if (existingUser == null) {
                                 db.userDao().insert(user);
@@ -123,7 +127,7 @@ public class MainPresenter implements MainContract.Presenter {
                 if (response.isSuccessful() && response.body() != null) {
                     User newUser = new User();
                     newUser.setId(response.body().getId());
-                    newUser.setName(response.body().getName());
+                    //newUser.setName(response.body().getName());
                     newUser.setJob(response.body().getJob());
                     Executors.newSingleThreadExecutor().execute(() -> {
                         db.userDao().insert(newUser);
@@ -141,43 +145,34 @@ public class MainPresenter implements MainContract.Presenter {
         });
     }
 
-
-
-
     @Override
-    public void deleteUser(String name) {
+    public void deleteUser(User user) {
         Executors.newSingleThreadExecutor().execute(() -> {
-            // Fetch the user from the database by name
-            User user = db.userDao().getUserByName(name);
+            long userId = user.getId();
 
-            if (user != null) {
-                long userId = user.getId();
-
-                // Now, make the API call to delete the user by ID
-                api.deleteUser(userId).enqueue(new Callback<Void>() {
-                    @Override
-                    public void onResponse(Call<Void> call, Response<Void> response) {
-                        if (response.isSuccessful()) {
-                            // If successful, delete the user locally
-                            Executors.newSingleThreadExecutor().execute(() -> {
-                                db.userDao().delete(user);
-                                runOnMainThread(() -> view.showUserDeleted(user));
-                            });
-                        } else {
-                            runOnMainThread(() -> view.showError("Failed to delete user"));
-                        }
+            // Now, make the API call to delete the user by ID
+            api.deleteUser(userId).enqueue(new Callback<Void>() {
+                @Override
+                public void onResponse(Call<Void> call, Response<Void> response) {
+                    if (response.isSuccessful()) {
+                        // If successful, delete the user locally
+                        Executors.newSingleThreadExecutor().execute(() -> {
+                            db.userDao().delete(user);
+                            runOnMainThread(() -> view.showUserDeleted(user));
+                        });
+                    } else {
+                        runOnMainThread(() -> view.showError("Failed to delete user"));
                     }
+                }
 
-                    @Override
-                    public void onFailure(Call<Void> call, Throwable t) {
-                        runOnMainThread(() -> view.showError("API call failed: " + t.getMessage()));
-                    }
-                });
-            } else {
-                runOnMainThread(() -> view.showError("User not found"));
-            }
+                @Override
+                public void onFailure(Call<Void> call, Throwable t) {
+                    runOnMainThread(() -> view.showError("API call failed: " + t.getMessage()));
+                }
+            });
         });
     }
+
 
     private void runOnMainThread(Runnable runnable) {
         mainThreadHandler.post(runnable);

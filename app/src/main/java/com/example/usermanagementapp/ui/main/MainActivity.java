@@ -29,20 +29,20 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        nameEditText = findViewById(R.id.nameEditText);
-        jobEditText = findViewById(R.id.jobEditText);
         recyclerView = findViewById(R.id.recyclerView);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        userAdapter = new UserAdapter();
-        recyclerView.setAdapter(userAdapter);
 
         AppDatabase db = AppDatabase.getDatabase(this);
+
+        presenter = new MainPresenter(this, db);
+
+        userAdapter = new UserAdapter(presenter);
+        recyclerView.setAdapter(userAdapter);
 
         // Clear database in the background
         clearDatabase(db);
 
-        presenter = new MainPresenter(this, db);
         presenter.loadUsers();
 
         Button addButton = findViewById(R.id.addButton);
@@ -56,15 +56,6 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
             }
         });
 
-        Button deleteButton = findViewById(R.id.deleteButton);
-        deleteButton.setOnClickListener(v -> {
-            String name = nameEditText.getText().toString();
-            if (!name.isEmpty()) {
-                presenter.deleteUser(name);
-            } else {
-                showError("Please provide a name");
-            }
-        });
     }
 
     private void clearDatabase(AppDatabase db) {

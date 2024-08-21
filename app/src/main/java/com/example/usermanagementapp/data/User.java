@@ -18,9 +18,12 @@ public class User {
         return id;
     }
 
-//    public void setName(String name) {
-//        this.Name = name;
-//    }
+    public void setFirstName(String name) {
+        this.first_name = name;
+    }
+    public void setLastName(String name) {
+        this.last_name = name;
+    }
 
     public void setEmail(String name) {
         this.email = name + "@reqres.in";
@@ -57,13 +60,13 @@ public class User {
 //            this.lastName = "";
 //        }
 //    }
-//    public String getFirstName() {
-//        return firstName;
-//    }
-//
-//    public String getLastName() {
-//        return lastName;
-//    }
+    public String getFirstName() {
+        return first_name;
+    }
+
+    public String getLastName() {
+        return last_name;
+    }
 
 
     public String getAvatar() {

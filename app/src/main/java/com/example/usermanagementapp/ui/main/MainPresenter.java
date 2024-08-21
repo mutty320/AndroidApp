@@ -62,6 +62,8 @@ public class MainPresenter implements MainContract.Presenter {
                         }
                         // Load all users from the database and update the UI
                         List<User> updatedUsers = db.userDao().getAllUsers();
+                        Log.d(TAG, "Updated user list size: " + updatedUsers.size());
+
                         runOnMainThread(() -> view.showUsers(updatedUsers));
                     });
                 } else {
@@ -77,73 +79,34 @@ public class MainPresenter implements MainContract.Presenter {
     }
 
     @Override
-    public void updateUser(String name) {
+    public void updateUser(User user) {
         Executors.newSingleThreadExecutor().execute(() -> {
-            // Fetch the user from the database based on the name
-            User user = db.userDao().getUserByName(name);
+            UserRequest userRequest = new UserRequest(user.getFirstName(), user.getJob());
+            api.updateUser(user.getId(), userRequest).enqueue(new Callback<UpdateResponse>() {
+                @Override
+                public void onResponse(Call<UpdateResponse> call, Response<UpdateResponse> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        UpdateResponse updatedUser = response.body();
+                        user.setFirstName(updatedUser.getName());
+                        user.setJob(updatedUser.getJob());
 
-            if (user != null) {
-                // Create the UserRequest using the fetched user's data
-                UserRequest userRequest = new UserRequest(user.getName(), user.getJob());
-
-                // Make the API call to update the user
-                api.updateUser(user.getId(), userRequest).enqueue(new Callback<UpdateResponse>() {
-                    @Override
-                    public void onResponse(Call<UpdateResponse> call, Response<UpdateResponse> response) {
-                        if (response.isSuccessful() && response.body() != null) {
-                            UpdateResponse updatedUser = response.body();
-
-                            // Update the user in the database
-                            Executors.newSingleThreadExecutor().execute(() -> {
-                                user.setJob(updatedUser.getJob());
-                                db.userDao().update(user);
-
-                                // Update the UI
-                                runOnMainThread(() -> view.showUserAdded(user));
-                            });
-                        } else {
-                            runOnMainThread(() -> view.showError("Failed to update user"));
-                        }
+                        Executors.newSingleThreadExecutor().execute(() -> {
+                            db.userDao().update(user);
+                            runOnMainThread(() -> view.showUserUpdated(user));
+                        });
+                    } else {
+                        runOnMainThread(() -> view.showError("Failed to update user"));
                     }
-
-                    @Override
-                    public void onFailure(Call<UpdateResponse> call, Throwable t) {
-                        runOnMainThread(() -> view.showError("API call failed: " + t.getMessage()));
-                    }
-                });
-            } else {
-                // Handle the case where the user is not found in the database
-                runOnMainThread(() -> view.showError("User not found in the database"));
-            }
-        });
-    }
-
-    @Override
-    public void addUser(String name, String job) {
-        UserRequest newUserRequest = new UserRequest(name, job);
-        api.createUser(newUserRequest).enqueue(new Callback<UserResponse>() {
-            @Override
-            public void onResponse(@NonNull Call<UserResponse> call, @NonNull Response<UserResponse> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    User newUser = new User();
-                    newUser.setId(response.body().getId());
-                    //newUser.setName(response.body().getName());
-                    newUser.setJob(response.body().getJob());
-                    Executors.newSingleThreadExecutor().execute(() -> {
-                        db.userDao().insert(newUser);
-                        runOnMainThread(() -> view.showUserAdded(newUser));
-                    });
-                } else {
-                    runOnMainThread(() -> view.showError("Failed to add user"));
                 }
-            }
 
-            @Override
-            public void onFailure(@NonNull Call<UserResponse> call, @NonNull Throwable t) {
-                runOnMainThread(() -> view.showError("API call failed: " + t.getMessage()));
-            }
+                @Override
+                public void onFailure(Call<UpdateResponse> call, Throwable t) {
+                    runOnMainThread(() -> view.showError("API call failed: " + t.getMessage()));
+                }
+            });
         });
     }
+
 
     @Override
     public void deleteUser(User user) {
@@ -152,6 +115,7 @@ public class MainPresenter implements MainContract.Presenter {
 
             // Now, make the API call to delete the user by ID
             api.deleteUser(userId).enqueue(new Callback<Void>() {
+
                 @Override
                 public void onResponse(Call<Void> call, Response<Void> response) {
                     if (response.isSuccessful()) {

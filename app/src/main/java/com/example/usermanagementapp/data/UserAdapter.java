@@ -1,12 +1,15 @@
 package com.example.usermanagementapp.data;
 
+import android.annotation.SuppressLint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
-
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -20,11 +23,12 @@ import java.util.List;
 public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
     private List<User> users;
     private MainContract.Presenter presenter;
-
+    private UpdateUserCallback updateUserCallback;
 
     // Constructor now initializes the user list if null
-    public UserAdapter(MainContract.Presenter presenter) {
+    public UserAdapter(MainContract.Presenter presenter, UpdateUserCallback updateUserCallback) {
         this.presenter = presenter;
+        this.updateUserCallback = updateUserCallback;
         this.users = new ArrayList<>();
     }
 
@@ -40,16 +44,44 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
     public void onBindViewHolder(ViewHolder holder, int position) {
         User user = users.get(position);
         holder.textViewName.setText(user.getName());
-        holder.textViewEmail.setText(user.getEmail()); // Bind email data
+        holder.textViewEmail.setText(user.getEmail());
         Glide.with(holder.itemView.getContext()).load(user.getAvatar()).into(holder.imageView);
-        // Set the delete button action
+
         holder.buttonDelete.setOnClickListener(v -> {
             presenter.deleteUser(user);
         });
 
-        // Set the update button action (similar to delete, if needed)
         holder.buttonUpdate.setOnClickListener(v -> {
-            // Implement the update functionality here
+            // Inflate the update form
+            LayoutInflater inflater = LayoutInflater.from(holder.itemView.getContext());
+            View formView = inflater.inflate(R.layout.dialog_update_user, null);
+
+            // Set up the form fields with existing user data
+            EditText firstNameEditText = formView.findViewById(R.id.editTextFirst_Name);
+            EditText lastNameEditText = formView.findViewById(R.id.editTextLast_Name);
+            EditText jobEditText = formView.findViewById(R.id.editTextJob);
+            EditText emailEditText = formView.findViewById(R.id.editTextEmail);
+
+            firstNameEditText.setText(user.getFirstName());
+            lastNameEditText.setText(user.getLastName());
+            jobEditText.setText(user.getJob());
+            emailEditText.setText(user.getEmail());
+
+            // Show the dialog
+            AlertDialog.Builder builder = new AlertDialog.Builder(holder.itemView.getContext());
+            builder.setView(formView)
+                    .setTitle("Update User")
+                    .setPositiveButton("Save", (dialog, which) -> {
+                        user.setFirstName(firstNameEditText.getText().toString());
+                        user.setLastName(lastNameEditText.getText().toString());
+                        user.setJob(jobEditText.getText().toString());
+                        user.setEmail(emailEditText.getText().toString());
+
+                        presenter.updateUser(user);
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .create()
+                    .show();
         });
     }
 
@@ -59,9 +91,14 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
     }
 
     // Method to set a new list of users
+    @SuppressLint("NotifyDataSetChanged")
     public void setUserList(List<User> users) {
         this.users = users;
         notifyDataSetChanged();
+    }
+
+    public interface UpdateUserCallback {////////////////////////
+        void onUpdateUserClicked(User user);
     }
 
     // Method to get the last user in the list
@@ -86,6 +123,28 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
             notifyItemRemoved(position);
         }
     }
+
+    public void updateUser(User user) {
+        int position = users.indexOf(user);
+        if (position >= 0) {
+            users.set(position, user);
+            notifyItemChanged(position);
+        }
+    }
+    public int getUserPosition(User user) {
+        for (int i = 0; i < users.size(); i++) {
+            if (users.get(i).getId() == user.getId()) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public void updateUser(int position, User user) {
+        users.set(position, user);
+        notifyItemChanged(position);
+    }
+
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         public TextView textViewName;

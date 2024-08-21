@@ -5,7 +5,7 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import android.content.Context;
 
-@Database(entities = {User.class}, version = 3) // Increase the version number
+@Database(entities = {User.class}, version = 2) // Increase the version number
 public abstract class AppDatabase extends RoomDatabase {
     public abstract UserDao userDao();
 

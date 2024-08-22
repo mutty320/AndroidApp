@@ -1,5 +1,6 @@
 package com.example.usermanagementapp.ui.main;
 
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -28,29 +29,35 @@ public class MainPresenter implements MainContract.Presenter {
     private final MainContract.View view;
     private final AppDatabase db;
     private final ReqResApi api;
+    private final SharedPreferences sharedPreferences;
     private final Handler mainThreadHandler = new Handler(Looper.getMainLooper());
     private int currentPage = 1; // To track the current page
     private int pageSize = 4; // To define the number of users per page
 
-    public MainPresenter(MainContract.View view, AppDatabase db) {
+    public MainPresenter(MainContract.View view, AppDatabase db, SharedPreferences sharedPreferences) {
         this.view = view;
         this.db = db;
+        this.sharedPreferences = sharedPreferences;
         this.api = ApiClient.getRetrofitInstance().create(ReqResApi.class);
     }
 
 
     @Override
     public void loadUsers(int page) {
+
         // Load users from the database in a background thread
         Executors.newSingleThreadExecutor().execute(() -> {
-            List<User> users = db.userDao().getUsersByPage((page - 1) * pageSize, pageSize);
-            if (!users.isEmpty()) {
-                runOnMainThread(() -> view.addUsers(users));  // Changed from `showUsers` to `addUsers`
-            }
+            List<User> users = db.userDao().getAllUsers();
+            runOnMainThread(() -> view.showUsers(users));
         });
 
-        // Load users from the API
-        api.getUsers(page).enqueue(new Callback<UsersResponse>() {
+        boolean isFirstRun = sharedPreferences.getBoolean("isFirstRun", true);
+        if (isFirstRun) {
+            loadUsersFromApi();
+        }
+    }
+    private void loadUsersFromApi() {
+        api.getUsers(currentPage).enqueue(new Callback<UsersResponse>() {
             @Override
             public void onResponse(Call<UsersResponse> call, Response<UsersResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
@@ -59,14 +66,14 @@ public class MainPresenter implements MainContract.Presenter {
                         for (User user : usersFromApi) {
                             User existingUser = db.userDao().getUserById((int) user.getId());
                             if (existingUser == null) {
-                                Log.v(TAG, String.valueOf(user.id));
-                                user.setAvatar(UserUtils.generateAvatarUrl(user.getId()));
-
                                 db.userDao().insert(user);
                             }
                         }
-                        List<User> updatedUsers = db.userDao().getUsersByPage((page - 1) * pageSize, pageSize);
-                        runOnMainThread(() -> view.addUsers(updatedUsers));  // Changed from `showUsers` to `addUsers`
+                        List<User> updatedUsers = db.userDao().getAllUsers();
+                        runOnMainThread(() -> view.showUsers(updatedUsers));
+
+                        // Mark initial load as complete
+                        sharedPreferences.edit().putBoolean("isFirstRun", false).apply();
                     });
                 } else {
                     runOnMainThread(() -> view.showError("Failed to load users from API"));
@@ -74,11 +81,12 @@ public class MainPresenter implements MainContract.Presenter {
             }
 
             @Override
-            public void onFailure(Call<UsersResponse> call, Throwable t) {
+            public void onFailure(@NonNull Call<UsersResponse> call, @NonNull Throwable t) {
                 runOnMainThread(() -> view.showError("API call failed: " + t.getMessage()));
             }
         });
     }
+
 
 
     @Override
@@ -143,7 +151,6 @@ public class MainPresenter implements MainContract.Presenter {
             });
         });
     }
-
 
     @Override
     public void deleteUser(User user) {

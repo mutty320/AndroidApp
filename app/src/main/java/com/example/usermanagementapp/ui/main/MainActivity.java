@@ -1,5 +1,6 @@
 package com.example.usermanagementapp.ui.main;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -28,6 +29,8 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
     private UserAdapter userAdapter;
     private MainContract.Presenter presenter;
     private int currentPage = 1;
+    private SharedPreferences sharedPreferences;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,27 +42,24 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
 
         AppDatabase db = AppDatabase.getDatabase(this);
 
-        presenter = new MainPresenter(this, db);
+        sharedPreferences = getSharedPreferences("UserManagementAppPrefs", MODE_PRIVATE);
+        presenter = new MainPresenter(this, db, sharedPreferences);
 
         userAdapter = new UserAdapter(presenter, this::showUpdateForm);
 
         recyclerView.setAdapter(userAdapter);
-
-        // Clear database in the background
-        clearDatabase(db);
-
         presenter.loadUsers(currentPage);
 
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-//                super.onScrolled(recyclerView, dx, dy);
-//
-//                LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
-//                if (layoutManager != null && layoutManager.findLastCompletelyVisibleItemPosition() == userAdapter.getItemCount() - 1) {
-//                    // Load the next page
-//                    presenter.loadUsers(++currentPage);
-//                }
+                super.onScrolled(recyclerView, dx, dy);
+
+                LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+                if (layoutManager != null && layoutManager.findLastCompletelyVisibleItemPosition() == userAdapter.getItemCount() - 1) {
+                    // Load the next page
+                    presenter.loadUsers(++currentPage);
+                }
             }
         });
 
@@ -130,11 +130,6 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
                 .show();
     }
 
-
-    private void clearDatabase(AppDatabase db) {
-        Executors.newSingleThreadExecutor().execute(db.userDao()::clearAll);
-    }
-
     @Override
     public void showUserUpdated(User user) {
         runOnUiThread(() -> {
@@ -150,15 +145,15 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
 //    public void showUsers(List<User> users) {
 //        runOnUiThread(() -> userAdapter.setUserList(users));
 //    }
-@Override
-public void showUsers(List<User> users) {
-    if (userAdapter != null) {
-        runOnUiThread(() -> {
-            userAdapter.setUserList(users);
-            userAdapter.notifyDataSetChanged();
-        });
+    @Override
+    public void showUsers(List<User> users) {
+        if (userAdapter != null) {
+            runOnUiThread(() -> {
+                userAdapter.setUserList(users);
+                userAdapter.notifyDataSetChanged();
+            });
+        }
     }
-}
 
     @Override
     public void addUsers(List<User> users) {
@@ -166,7 +161,6 @@ public void showUsers(List<User> users) {
             userAdapter.addUsers(users);
         });
     }
-
     @Override
     public void showUserAdded(User user) {
         runOnUiThread(() -> userAdapter.addUser(user));

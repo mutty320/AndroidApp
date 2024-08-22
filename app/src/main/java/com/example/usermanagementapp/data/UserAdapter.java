@@ -96,6 +96,13 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
         this.users = users;
         notifyDataSetChanged();
     }
+    // Method to add more users to the list
+    public void addUsers(List<User> users) {
+        int startPosition = this.users.size();
+        this.users.addAll(users);
+        notifyItemRangeInserted(startPosition, users.size());
+    }
+
 
     public interface UpdateUserCallback {////////////////////////
         void onUpdateUserClicked(User user);

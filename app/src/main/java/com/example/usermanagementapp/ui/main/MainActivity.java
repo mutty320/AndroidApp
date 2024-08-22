@@ -6,6 +6,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -26,6 +27,7 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
     private RecyclerView recyclerView;
     private UserAdapter userAdapter;
     private MainContract.Presenter presenter;
+    private int currentPage = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,9 +48,22 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
         // Clear database in the background
         clearDatabase(db);
 
-        presenter.loadUsers();
+        presenter.loadUsers(currentPage);
 
-       Button addButton = findViewById(R.id.addButton);
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+//                super.onScrolled(recyclerView, dx, dy);
+//
+//                LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+//                if (layoutManager != null && layoutManager.findLastCompletelyVisibleItemPosition() == userAdapter.getItemCount() - 1) {
+//                    // Load the next page
+//                    presenter.loadUsers(++currentPage);
+//                }
+            }
+        });
+
+        Button addButton = findViewById(R.id.addButton);
        addButton.setOnClickListener(v -> showAddUserForm());
 
     }
@@ -145,6 +160,12 @@ public void showUsers(List<User> users) {
     }
 }
 
+    @Override
+    public void addUsers(List<User> users) {
+        runOnUiThread(() -> {
+            userAdapter.addUsers(users);
+        });
+    }
 
     @Override
     public void showUserAdded(User user) {

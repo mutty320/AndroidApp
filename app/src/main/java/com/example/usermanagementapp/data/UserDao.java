@@ -33,4 +33,7 @@ public interface UserDao {
 
     @Query("SELECT * FROM User WHERE first_name = :name LIMIT 1")
     User getUserByName(String name);
+
+    @Query("SELECT * FROM User LIMIT :pageSize OFFSET :offset")
+    List<User> getUsersByPage(int offset, int pageSize);
 }

@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 
 import com.example.usermanagementapp.data.AppDatabase;
 import com.example.usermanagementapp.data.User;
+import com.example.usermanagementapp.data.UserUtils;
 import com.example.usermanagementapp.network.ApiClient;
 import com.example.usermanagementapp.network.ReqResApi;
 import com.example.usermanagementapp.network.UserRequest;
@@ -28,6 +29,8 @@ public class MainPresenter implements MainContract.Presenter {
     private final AppDatabase db;
     private final ReqResApi api;
     private final Handler mainThreadHandler = new Handler(Looper.getMainLooper());
+    private int currentPage = 1; // To track the current page
+    private int pageSize = 4; // To define the number of users per page
 
     public MainPresenter(MainContract.View view, AppDatabase db) {
         this.view = view;
@@ -35,36 +38,35 @@ public class MainPresenter implements MainContract.Presenter {
         this.api = ApiClient.getRetrofitInstance().create(ReqResApi.class);
     }
 
+
     @Override
-    public void loadUsers() {
+    public void loadUsers(int page) {
         // Load users from the database in a background thread
         Executors.newSingleThreadExecutor().execute(() -> {
-            List<User> users = db.userDao().getAllUsers();
-            // Update the UI on the main thread
-            runOnMainThread(() -> view.showUsers(users));
+            List<User> users = db.userDao().getUsersByPage((page - 1) * pageSize, pageSize);
+            if (!users.isEmpty()) {
+                runOnMainThread(() -> view.addUsers(users));  // Changed from `showUsers` to `addUsers`
+            }
         });
 
         // Load users from the API
-        api.getUsers(2).enqueue(new Callback<UsersResponse>() {
+        api.getUsers(page).enqueue(new Callback<UsersResponse>() {
             @Override
             public void onResponse(Call<UsersResponse> call, Response<UsersResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     List<User> usersFromApi = response.body().getData();
                     Executors.newSingleThreadExecutor().execute(() -> {
                         for (User user : usersFromApi) {
-
-                            Log.d(TAG, user.last_name);
-
                             User existingUser = db.userDao().getUserById((int) user.getId());
                             if (existingUser == null) {
+                                Log.v(TAG, String.valueOf(user.id));
+                                user.setAvatar(UserUtils.generateAvatarUrl(user.getId()));
+
                                 db.userDao().insert(user);
                             }
                         }
-                        // Load all users from the database and update the UI
-                        List<User> updatedUsers = db.userDao().getAllUsers();
-                        Log.d(TAG, "Updated user list size: " + updatedUsers.size());
-
-                        runOnMainThread(() -> view.showUsers(updatedUsers));
+                        List<User> updatedUsers = db.userDao().getUsersByPage((page - 1) * pageSize, pageSize);
+                        runOnMainThread(() -> view.addUsers(updatedUsers));  // Changed from `showUsers` to `addUsers`
                     });
                 } else {
                     runOnMainThread(() -> view.showError("Failed to load users from API"));
@@ -72,11 +74,12 @@ public class MainPresenter implements MainContract.Presenter {
             }
 
             @Override
-            public void onFailure(@NonNull Call<UsersResponse> call, @NonNull Throwable t) {
+            public void onFailure(Call<UsersResponse> call, Throwable t) {
                 runOnMainThread(() -> view.showError("API call failed: " + t.getMessage()));
             }
         });
     }
+
 
     @Override
     public void updateUser(User user) {
@@ -121,6 +124,7 @@ public class MainPresenter implements MainContract.Presenter {
                         Executors.newSingleThreadExecutor().execute(() -> {
                             if (db.userDao().getUserById((int) newUserId) == null) {
                                 user.setId(newUserId);
+                                user.setAvatar(UserUtils.generateAvatarUrl(user.getId()));
                                 db.userDao().insert(user);
                                 runOnMainThread(() -> view.showUserAdded(user));
                             } else {

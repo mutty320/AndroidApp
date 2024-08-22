@@ -12,7 +12,7 @@ public class User {
     public String last_name;
     //public String Name;
     public String job;
-    public String avatar;
+    private String avatar;
 
     public long getId() {
         return id;
@@ -23,6 +23,9 @@ public class User {
     }
     public void setLastName(String name) {
         this.last_name = name;
+    }
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
     }
 
     public void setEmail(String name) {

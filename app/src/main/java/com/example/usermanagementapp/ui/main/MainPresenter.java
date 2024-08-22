@@ -25,7 +25,6 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MainPresenter implements MainContract.Presenter {
-    private static final String TAG = "MainActivity";
     private final MainContract.View view;
     private final AppDatabase db;
     private final ReqResApi api;
@@ -41,7 +40,6 @@ public class MainPresenter implements MainContract.Presenter {
         this.api = ApiClient.getRetrofitInstance().create(ReqResApi.class);
     }
 
-
     @Override
     public void loadUsers(int page) {
 
@@ -56,6 +54,7 @@ public class MainPresenter implements MainContract.Presenter {
             loadUsersFromApi();
         }
     }
+
     private void loadUsersFromApi() {
         api.getUsers(currentPage).enqueue(new Callback<UsersResponse>() {
             @Override
@@ -66,6 +65,7 @@ public class MainPresenter implements MainContract.Presenter {
                         for (User user : usersFromApi) {
                             User existingUser = db.userDao().getUserById((int) user.getId());
                             if (existingUser == null) {
+                                user.setAvatar(UserUtils.generateAvatarUrl(user.getId()));
                                 db.userDao().insert(user);
                             }
                         }
@@ -86,8 +86,6 @@ public class MainPresenter implements MainContract.Presenter {
             }
         });
     }
-
-
 
     @Override
     public void updateUser(User user) {

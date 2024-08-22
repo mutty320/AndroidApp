@@ -21,16 +21,12 @@ public class User {
     public void setFirstName(String name) {
         this.first_name = name;
     }
-    public void setLastName(String name) {
+    public void setLastName(String name)  {
         this.last_name = name;
     }
-    public void setAvatar(String avatar) {
-        this.avatar = avatar;
-    }
-
+    public void setAvatar(String avatar) { this.avatar = avatar; }
     public void setEmail(String name) {
         this.email = name + "@reqres.in";
-
     }
 
     public String getEmail() {

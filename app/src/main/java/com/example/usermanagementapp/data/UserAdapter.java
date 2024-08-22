@@ -103,7 +103,6 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
         notifyItemRangeInserted(startPosition, users.size());
     }
 
-
     public interface UpdateUserCallback {////////////////////////
         void onUpdateUserClicked(User user);
     }
@@ -119,7 +118,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
     // Method to add a new user to the list
     public void addUser(User user) {
         users.add(user);
-        notifyItemInserted(users.size() - 1);
+        notifyItemInserted(users.size()-1);
     }
 
     // Method to remove a user from the list

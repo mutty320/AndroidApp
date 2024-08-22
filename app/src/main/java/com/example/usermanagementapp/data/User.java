@@ -1,74 +1,55 @@
 package com.example.usermanagementapp.data;
 
+import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
+
+import com.google.gson.annotations.SerializedName;
 
 @Entity
 public class User {
     @PrimaryKey
-    public long id;
-    public String email;
-    public String first_name;
-    public String last_name;
-    //public String Name;
-    public String job;
+    private long id;
+    private String email;
+
+    @SerializedName("first_name")
+    private String firstName;
+
+    @SerializedName("last_name")
+    private String lastName;
+
+    private String job;
     private String avatar;
 
+    public String getName() {
+        return firstName + " " + lastName;
+    }
+    public String getJob() {
+        return this.job;
+    }
+    public String getFirstName() {
+        return firstName;
+    }
+    public String getLastName() {
+        return lastName;
+    }
+    public String getEmail() { return email; }
+    public String getAvatar() {
+        return avatar;
+    }
     public long getId() {
         return id;
     }
 
-    public void setFirstName(String name) {
-        this.first_name = name;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
-    public void setLastName(String name)  {
-        this.last_name = name;
+    public void setLastName(String lastName)  {
+        this.lastName = lastName;
     }
     public void setAvatar(String avatar) { this.avatar = avatar; }
-    public void setEmail(String name) {
-        this.email = name + "@reqres.in";
-    }
+    public void setEmail(String email) { this.email = email; }
+    public void setJob(String job) { this.job =  job; }
+    public void setId(long id) { this.id  = id;}
 
-    public String getEmail() {
-        return email;
-
-    }
-
-    public void setJob(String job) {
-        this.job =  job;
-
-    }
-    public void setId(long id) {
-        this.id  = id;
-
-    }
-    public String getName() {
-        return first_name + " " +last_name;
-    }
-    public String getJob() {
-        return job;
-    }
-
-
-//    public void setName(String name) {
-//        String[] nameParts = name.split(" ");
-//        this.firstName = nameParts[0];
-//        if (nameParts.length > 1) {
-//            this.lastName = nameParts[1];
-//        } else {
-//            this.lastName = "";
-//        }
-//    }
-    public String getFirstName() {
-        return first_name;
-    }
-
-    public String getLastName() {
-        return last_name;
-    }
-
-
-    public String getAvatar() {
-        return avatar;
-    }
 }

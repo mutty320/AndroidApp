@@ -6,7 +6,6 @@ import java.util.List;
 public interface MainContract {
 
     interface View {
-        void addUsers(List<User> users);
         void showUsers(List<User> users);
         void showUserAdded(User user);
         void showUserUpdated(User user);

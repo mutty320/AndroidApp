@@ -140,27 +140,16 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
         });
     }
 
-
-//    @Override
-//    public void showUsers(List<User> users) {
-//        runOnUiThread(() -> userAdapter.setUserList(users));
-//    }
     @Override
     public void showUsers(List<User> users) {
         if (userAdapter != null) {
             runOnUiThread(() -> {
                 userAdapter.setUserList(users);
-                userAdapter.notifyDataSetChanged();
+                userAdapter.notifyItemRangeChanged(0, users.size());
             });
         }
     }
 
-    @Override
-    public void addUsers(List<User> users) {
-        runOnUiThread(() -> {
-            userAdapter.addUsers(users);
-        });
-    }
     @Override
     public void showUserAdded(User user) {
         runOnUiThread(() -> userAdapter.addUser(user));

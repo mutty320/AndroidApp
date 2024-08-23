@@ -48,17 +48,25 @@
             android:orientation="vertical"
             android:gravity="center_vertical">
 
-            <Button
+            <ImageButton
                 android:id="@+id/buttonUpdate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Update" />
+                android:src="@drawable/ic_edit"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:layout_marginBottom="8dp"
+                android:contentDescription="@string/update_user" />
 
-            <Button
+
+            <ImageButton
                 android:id="@+id/buttonDelete"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Delete" />
+                android:src="@drawable/ic_delete"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:layout_marginTop="8dp"
+                android:contentDescription="@string/delete_user" />
+
         </LinearLayout>
 
     </LinearLayout>

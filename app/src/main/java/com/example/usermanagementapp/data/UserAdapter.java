@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
@@ -117,8 +118,8 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
         public TextView textViewName;
         public ImageView imageView;
         public TextView textViewEmail;
-        public Button buttonUpdate;
-        public Button buttonDelete;
+        public ImageButton buttonUpdate;
+        public ImageButton buttonDelete;
 
         public ViewHolder(View itemView) {
             super(itemView);

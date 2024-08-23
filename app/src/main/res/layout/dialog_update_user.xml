@@ -6,43 +6,56 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <!-- First Name Input Field -->
-    <EditText
-        android:id="@+id/editTextFirst_Name"
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/firstNameLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="First Name"
-        android:inputType="textPersonName"
-        android:textColor="@android:color/black"
-        android:layout_marginBottom="8dp"/>
+        android:hint="First Name">
 
-    <!-- Last Name Input Field -->
-    <EditText
-        android:id="@+id/editTextLast_Name"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Last Name"
-        android:inputType="textPersonName"
-        android:textColor="@android:color/black"
-        android:layout_marginBottom="8dp"/>
+        <EditText
+            android:id="@+id/editTextFirst_Name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textPersonName" />
+    </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Job Input Field -->
-    <EditText
-        android:id="@+id/editTextJob"
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/lastNameLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Job"
-        android:inputType="textPersonName"
-        android:textColor="@android:color/black"
-        android:layout_marginBottom="8dp"/>
+        android:hint="Last Name">
 
-    <!-- Email Input Field -->
-    <EditText
-        android:id="@+id/editTextEmail"
+        <EditText
+            android:id="@+id/editTextLast_Name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textPersonName" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/jobLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Email"
-        android:inputType="textEmailAddress"
-        android:textColor="@android:color/black"
-        android:layout_marginBottom="8dp"/>
+        android:hint="Job">
+
+        <EditText
+            android:id="@+id/editTextJob"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textPersonName" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/emailLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Email">
+
+        <EditText
+            android:id="@+id/editTextEmail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textEmailAddress" />
+    </com.google.android.material.textfield.TextInputLayout>
+
 </LinearLayout>

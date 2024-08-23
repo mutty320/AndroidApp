@@ -57,6 +57,8 @@ dependencies {
     implementation(libs.gsonConverter)
     implementation(libs.roomRuntime)
     implementation(libs.androidx.appcompat)
+    implementation(libs.material)
+
 //    annotationProcessor(libs.roomCompiler)
     kapt(libs.roomCompiler)
 

@@ -2,6 +2,7 @@ package com.example.usermanagementapp.ui.main;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -80,10 +81,18 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
         EditText emailEditText = formView.findViewById(R.id.editTextEmail);
 
         // Show the dialog
-        new AlertDialog.Builder(this)
+        AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle("Add User")
                 .setView(formView)
-                .setPositiveButton("Save", (dialog, which) -> {
+                .setPositiveButton("Save", null)
+                .setNegativeButton("Cancel", (d, which) -> d.dismiss())
+                .create();
+
+        dialog.setOnShowListener(d -> {
+            Button saveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+            saveButton.setOnClickListener(v -> {
+                // Validate form before proceeding
+                if (validateForm(firstNameEditText, lastNameEditText, jobEditText, emailEditText)) {
                     // Collect the user input
                     String firstName = firstNameEditText.getText().toString();
                     String lastName = lastNameEditText.getText().toString();
@@ -98,12 +107,22 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
                     newUser.setEmail(email);
 
                     presenter.addUser(newUser);
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
+                    Toast.makeText(MainActivity.this, "User added successfully", Toast.LENGTH_SHORT).show();
+
+                    // Close the dialog
+                    dialog.dismiss();
+                } else {
+                    // Show a general error message if validation fails
+                    Toast.makeText(MainActivity.this, "Please correct the errors", Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
+
+        dialog.show();
     }
 
     private void showUpdateForm(User user) {
+        // Inflate the update user form
         View formView = getLayoutInflater().inflate(R.layout.dialog_update_user, null);
         EditText updateFirstNameEditText = formView.findViewById(R.id.editTextFirst_Name);
         EditText updateLastNameEditText = formView.findViewById(R.id.editTextLast_Name);
@@ -115,20 +134,82 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
         updateJobEditText.setText(user.getJob());
         updateEmailEditText.setText(user.getEmail());
 
-        new AlertDialog.Builder(this)
+        AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle("Update User")
                 .setView(formView)
-                .setPositiveButton("Save", (dialog, which) -> {
+                .setPositiveButton("Save", null)
+                .setNegativeButton("Cancel", (d, which) -> d.dismiss())
+                .create();
+
+        dialog.setOnShowListener(d -> {
+            Button saveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+            saveButton.setOnClickListener(v -> {
+                // Validate form before proceeding
+                if (validateForm(updateFirstNameEditText, updateLastNameEditText, updateJobEditText, updateEmailEditText)) {
+                    // Update the user with validated input
                     user.setFirstName(updateFirstNameEditText.getText().toString());
                     user.setLastName(updateLastNameEditText.getText().toString());
                     user.setJob(updateJobEditText.getText().toString());
                     user.setEmail(updateEmailEditText.getText().toString());
 
                     presenter.updateUser(user);
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
+                    Toast.makeText(MainActivity.this, "User updated successfully", Toast.LENGTH_SHORT).show();
+
+                    // Close the dialog
+                    dialog.dismiss();
+                } else {
+                    // Show a general error message if validation fails
+                    Toast.makeText(MainActivity.this, "Please correct the errors", Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
+
+        dialog.show();
     }
+    
+    private boolean validateForm(EditText firstNameEditText, EditText lastNameEditText, EditText jobEditText, EditText emailEditText) {
+        boolean isValid = true;
+
+        // Validate first name
+        if (firstNameEditText.getText().toString().trim().isEmpty()) {
+            firstNameEditText.setError("First Name is required");
+            isValid = false;
+        } else if (firstNameEditText.getText().toString().length() > 50) {
+            firstNameEditText.setError("First Name is too long");
+            isValid = false;
+        }
+
+        // Validate last name
+        if (lastNameEditText.getText().toString().trim().isEmpty()) {
+            lastNameEditText.setError("Last Name is required");
+            isValid = false;
+        } else if (lastNameEditText.getText().toString().length() > 50) {
+            lastNameEditText.setError("Last Name is too long");
+            isValid = false;
+        }
+
+        // Validate job
+        if (jobEditText.getText().toString().trim().isEmpty()) {
+            jobEditText.setError("Job is required");
+            isValid = false;
+        } else if (jobEditText.getText().toString().length() > 50) {
+            jobEditText.setError("Job is too long");
+            isValid = false;
+        }
+
+        // Validate email
+        if (emailEditText.getText().toString().trim().isEmpty()) {
+            emailEditText.setError("Email is required");
+            isValid = false;
+        } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(emailEditText.getText().toString()).matches()) {
+            emailEditText.setError("Invalid email format");
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
+
 
     @Override
     public void showUserUpdated(User user) {

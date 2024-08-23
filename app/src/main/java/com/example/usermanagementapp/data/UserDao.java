@@ -36,4 +36,13 @@ public interface UserDao {
 
     @Query("SELECT * FROM User LIMIT :pageSize OFFSET :offset")
     List<User> getUsersByPage(int offset, int pageSize);
+
+    @Query("SELECT * FROM User WHERE firstName = :firstName AND lastName = :lastName LIMIT 1")
+    User getUserByFullName(String firstName, String lastName);
+
+    @Query("SELECT * FROM User WHERE email = :email LIMIT 1")
+    User getUserByEmail(String email);
+
+
+
 }

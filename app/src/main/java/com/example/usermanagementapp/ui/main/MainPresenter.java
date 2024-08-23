@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -115,10 +116,24 @@ public class MainPresenter implements MainContract.Presenter {
             });
         });
     }
-
     @Override
     public void addUser(User user) {
         Executors.newSingleThreadExecutor().execute(() -> {
+            // Check if the user already exists by name combination or email
+            User existingUserByName = db.userDao().getUserByFullName(user.getFirstName(), user.getLastName());
+            User existingUserByEmail = db.userDao().getUserByEmail(user.getEmail());
+
+            if (existingUserByName != null) {
+                runOnMainThread(() -> view.showError("User with this name already exists."));
+                return;
+            }
+
+            if (existingUserByEmail != null) {
+                runOnMainThread(() -> view.showError("User with this email already exists."));
+                return;
+            }
+
+            // Proceed with adding the user via the API
             UserRequest userRequest = new UserRequest(user.getFirstName() + " " + user.getLastName(), user.getJob());
             api.createUser(userRequest).enqueue(new Callback<UserResponse>() {
                 @Override
@@ -126,13 +141,15 @@ public class MainPresenter implements MainContract.Presenter {
                     if (response.isSuccessful() && response.body() != null) {
                         long newUserId = response.body().getId();
 
-                        // Move the database check to a background thread
                         Executors.newSingleThreadExecutor().execute(() -> {
+                            // Check if the user ID already exists before inserting
                             if (db.userDao().getUserById((int) newUserId) == null) {
                                 user.setId(newUserId);
                                 user.setAvatar(UserUtils.generateAvatarUrl(user.getId()));
                                 db.userDao().insert(user);
                                 runOnMainThread(() -> view.showUserAdded(user));
+                                view.showError("User added successfully");  // Show success message here
+
                             } else {
                                 runOnMainThread(() -> view.showError("User ID already exists."));
                             }

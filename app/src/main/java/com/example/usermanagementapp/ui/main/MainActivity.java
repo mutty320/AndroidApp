@@ -107,7 +107,6 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
                     newUser.setEmail(email);
 
                     presenter.addUser(newUser);
-                    Toast.makeText(MainActivity.this, "User added successfully", Toast.LENGTH_SHORT).show();
 
                     // Close the dialog
                     dialog.dismiss();
@@ -166,7 +165,7 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
 
         dialog.show();
     }
-    
+
     private boolean validateForm(EditText firstNameEditText, EditText lastNameEditText, EditText jobEditText, EditText emailEditText) {
         boolean isValid = true;
 

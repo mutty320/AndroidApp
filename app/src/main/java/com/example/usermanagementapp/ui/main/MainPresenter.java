@@ -116,21 +116,30 @@ public class MainPresenter implements MainContract.Presenter {
             });
         });
     }
+    private boolean validateUser(User user) {
+        // Check if the user already exists by name combination or email
+        User existingUserByName = db.userDao().getUserByFullName(user.getFirstName(), user.getLastName());
+        User existingUserByEmail = db.userDao().getUserByEmail(user.getEmail());
+
+        if (existingUserByName != null) {
+            runOnMainThread(() -> view.showError("User with this name already exists."));
+            return false;
+        }
+
+        if (existingUserByEmail != null) {
+            runOnMainThread(() -> view.showError("User with this email already exists."));
+            return false;
+        }
+
+        return true;
+    }
+
     @Override
     public void addUser(User user) {
         Executors.newSingleThreadExecutor().execute(() -> {
-            // Check if the user already exists by name combination or email
-            User existingUserByName = db.userDao().getUserByFullName(user.getFirstName(), user.getLastName());
-            User existingUserByEmail = db.userDao().getUserByEmail(user.getEmail());
-
-            if (existingUserByName != null) {
-                runOnMainThread(() -> view.showError("User with this name already exists."));
-                return;
-            }
-
-            if (existingUserByEmail != null) {
-                runOnMainThread(() -> view.showError("User with this email already exists."));
-                return;
+            // Validate the user before proceeding
+            if (!validateUser(user)) {
+                return; // Stop further execution if validation fails
             }
 
             // Proceed with adding the user via the API
@@ -147,9 +156,10 @@ public class MainPresenter implements MainContract.Presenter {
                                 user.setId(newUserId);
                                 user.setAvatar(UserUtils.generateAvatarUrl(user.getId()));
                                 db.userDao().insert(user);
-                                runOnMainThread(() -> view.showUserAdded(user));
-                                view.showError("User added successfully");  // Show success message here
-
+                                runOnMainThread(() -> {
+                                    view.showUserAdded(user);
+                                    view.showError("User added successfully"); // Show success message here
+                                });
                             } else {
                                 runOnMainThread(() -> view.showError("User ID already exists."));
                             }
@@ -166,6 +176,7 @@ public class MainPresenter implements MainContract.Presenter {
             });
         });
     }
+
 
     @Override
     public void deleteUser(User user) {

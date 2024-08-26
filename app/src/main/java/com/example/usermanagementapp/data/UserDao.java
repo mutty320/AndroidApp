@@ -13,12 +13,6 @@ public interface UserDao {
     @Insert
     void insert(User user);
 
-    @Insert
-    void insertAll(List<User> users);
-
-    @Query("SELECT * FROM User")
-    List<User> getAllUsers();
-
     @Query("SELECT * FROM User WHERE id = :id LIMIT 1")
     User getUserById(int id);
 
@@ -30,9 +24,6 @@ public interface UserDao {
 
     @Query("DELETE FROM User")
     void clearAll();
-
-    @Query("SELECT * FROM User WHERE firstName = :name LIMIT 1")
-    User getUserByName(String name);
 
     @Query("SELECT * FROM User LIMIT :pageSize OFFSET :offset")
     List<User> getUsersByPage(int offset, int pageSize);

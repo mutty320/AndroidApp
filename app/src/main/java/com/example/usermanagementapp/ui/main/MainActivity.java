@@ -29,7 +29,9 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
     private RecyclerView recyclerView;
     private UserAdapter userAdapter;
     private MainContract.Presenter presenter;
+    private LinearLayoutManager layoutManager;
     private int currentPage = 1;
+    private boolean isLoading = false;
     private SharedPreferences sharedPreferences;
 
 
@@ -39,6 +41,7 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
         setContentView(R.layout.activity_main);
 
         recyclerView = findViewById(R.id.recyclerView);
+        layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         AppDatabase db = AppDatabase.getDatabase(this);
@@ -49,20 +52,10 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
         userAdapter = new UserAdapter(presenter, this::showUpdateForm);
 
         recyclerView.setAdapter(userAdapter);
+        setupScrollListener();
+
         presenter.loadUsers(currentPage);
 
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-
-                LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
-                if (layoutManager != null && layoutManager.findLastCompletelyVisibleItemPosition() == userAdapter.getItemCount() - 1) {
-                    // Load the next page
-                    presenter.loadUsers(++currentPage);
-                }
-            }
-        });
 
         Button addButton = findViewById(R.id.addButton);
        addButton.setOnClickListener(v -> showAddUserForm());
@@ -220,15 +213,43 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
         });
     }
 
+
+    private void setupScrollListener() {
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+
+                if (!recyclerView.canScrollVertically(1) && !isLoading) {
+                    currentPage++;
+                    isLoading = true;
+                    presenter.loadUsers(currentPage);
+                }
+            }
+        });
+    }
+
     @Override
     public void showUsers(List<User> users) {
-        if (userAdapter != null) {
-            runOnUiThread(() -> {
-                userAdapter.setUserList(users);
-                userAdapter.notifyItemRangeChanged(0, users.size());
-            });
-        }
+        runOnUiThread(() -> {
+            if (currentPage == 1) {
+                userAdapter.setUserList(users);  // Clear and set the list on the first page
+            } else {
+                userAdapter.addUsers(users);  // Add users for subsequent pages
+            }
+            isLoading = false;
+        });
     }
+
+//    @Override
+//    public void showUsers(List<User> users) {
+//        if (userAdapter != null) {
+//            runOnUiThread(() -> {
+//                userAdapter.setUserList(users);
+//                userAdapter.notifyItemRangeChanged(0, users.size());
+//            });
+//        }
+//    }
 
     @Override
     public void showUserAdded(User user) {

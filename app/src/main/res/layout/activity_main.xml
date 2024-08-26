@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -13,31 +14,11 @@
         android:layout_height="0dp"
         android:layout_margin="16dp"
         app:layout_constraintTop_toTopOf="parent"
-
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/addButton"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <Button
-        android:id="@+id/updateButton"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="Update User"
-        app:layout_constraintTop_toBottomOf="@id/recyclerView"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_margin="8dp"/>
-
-    <Button
-        android:id="@+id/deleteButton"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="Delete User"
-        app:layout_constraintTop_toBottomOf="@id/updateButton"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_margin="8dp"/>
-
+    <!-- Add User Button -->
     <Button
         android:id="@+id/addButton"
         android:layout_width="0dp"
@@ -48,4 +29,27 @@
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_margin="8dp"/>
 
+    <!-- Update Button (if still needed) -->
+    <Button
+        android:id="@+id/updateButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Update User"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/addButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_margin="8dp"/>
+
+    <!-- Delete Button (if still needed) -->
+    <Button
+        android:id="@+id/deleteButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Delete User"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/updateButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_margin="8dp"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

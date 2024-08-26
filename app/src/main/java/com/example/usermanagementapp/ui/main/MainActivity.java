@@ -3,10 +3,13 @@ package com.example.usermanagementapp.ui.main;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Patterns;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+import androidx.appcompat.widget.Toolbar;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -20,31 +23,35 @@ import com.example.usermanagementapp.data.User;
 import com.example.usermanagementapp.data.UserAdapter;
 import android.view.LayoutInflater;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity implements MainContract.View {
 
-    private EditText nameEditText, jobEditText;
     private RecyclerView recyclerView;
     private UserAdapter userAdapter;
     private MainContract.Presenter presenter;
     private LinearLayoutManager layoutManager;
     private int currentPage = 1;
     private boolean isLoading = false;
+    private boolean isResetting = false;
     private SharedPreferences sharedPreferences;
-
+    AppDatabase db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        // Set up the toolbar
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
         recyclerView = findViewById(R.id.recyclerView);
         layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        AppDatabase db = AppDatabase.getDatabase(this);
+        db = AppDatabase.getDatabase(this);
 
         sharedPreferences = getSharedPreferences("UserManagementAppPrefs", MODE_PRIVATE);
         presenter = new MainPresenter(this, db, sharedPreferences);
@@ -55,11 +62,6 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
         setupScrollListener();
 
         presenter.loadUsers(currentPage);
-
-
-        Button addButton = findViewById(R.id.addButton);
-       addButton.setOnClickListener(v -> showAddUserForm());
-
     }
 
     private void showAddUserForm() {
@@ -201,8 +203,6 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
         return isValid;
     }
 
-
-
     @Override
     public void showUserUpdated(User user) {
         runOnUiThread(() -> {
@@ -213,14 +213,13 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
         });
     }
 
-
     private void setupScrollListener() {
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
 
-                if (!recyclerView.canScrollVertically(1) && !isLoading) {
+                if (!recyclerView.canScrollVertically(1) && !isLoading && !isResetting) {
                     currentPage++;
                     isLoading = true;
                     presenter.loadUsers(currentPage);
@@ -232,24 +231,118 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
     @Override
     public void showUsers(List<User> users) {
         runOnUiThread(() -> {
-            if (currentPage == 1) {
-                userAdapter.setUserList(users);  // Clear and set the list on the first page
+            if (isResetting) {
+                userAdapter.setUserList(users);  // Clear and set the list on reset
+                isResetting = false;
             } else {
-                userAdapter.addUsers(users);  // Add users for subsequent pages
+                if (currentPage == 1) {
+                    userAdapter.setUserList(users);  // Clear and set the list on the first page
+                } else {
+                    userAdapter.addUsers(users);  // Add users for subsequent pages
+                }
             }
             isLoading = false;
         });
     }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
 
-//    @Override
-//    public void showUsers(List<User> users) {
-//        if (userAdapter != null) {
-//            runOnUiThread(() -> {
-//                userAdapter.setUserList(users);
-//                userAdapter.notifyItemRangeChanged(0, users.size());
-//            });
-//        }
-//    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_search) {
+            showSearchUserDialog();
+
+            return true;
+        } else if (id == R.id.action_clear_all) {
+            clearAllUsers();
+            showClearAllUsers();
+            return true;
+        } else if (id == R.id.action_add) {
+            showAddUserForm();
+            return true;
+        } else if (id == R.id.action_back){
+            isResetting = true;
+            currentPage = 1;
+            userAdapter.setUserList(new ArrayList<>());  // Clear the adapter
+            presenter.loadUsers(currentPage);  // Load the first page of users
+            return true;
+        } else {
+            return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void showSearchUserDialog() {
+        // Inflate the search user dialog
+        LayoutInflater inflater = LayoutInflater.from(this);
+        View formView = inflater.inflate(R.layout.dialog_search_user, null);
+
+        // Set up the form fields
+        EditText searchNameEditText = formView.findViewById(R.id.searchNameEditText);
+        EditText searchEmailEditText = formView.findViewById(R.id.searchEmailEditText);
+
+        // Show the dialog
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle("Search User")
+                .setView(formView)
+                .setPositiveButton("Search", (d, which) -> {
+                    // Perform the search
+                    String name = searchNameEditText.getText().toString().trim();
+                    String email = searchEmailEditText.getText().toString().trim();
+
+                    if (!name.isEmpty()) {
+                        searchUserByName(name);
+                    } else if (!email.isEmpty()) {
+                        searchUserByEmail(email);
+                    } else {
+                        Toast.makeText(MainActivity.this, "Please enter a name or email", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .setNegativeButton("Cancel", (d, which) -> d.dismiss())
+                .create();
+
+        dialog.show();
+    }
+
+    private void searchUserByName(String name) {
+        Executors.newSingleThreadExecutor().execute(() -> {
+            String[] parts = name.split(" ");
+            if (parts.length == 2) {
+                User user = db.userDao().getUserByFullName(parts[0], parts[1]);
+                runOnUiThread(() -> showSearchResult(user));
+            } else {
+                runOnUiThread(() -> Toast.makeText(MainActivity.this, "Please enter a full name", Toast.LENGTH_SHORT).show());
+            }
+        });
+    }
+    private void searchUserByEmail(String email) {
+        Executors.newSingleThreadExecutor().execute(() -> {
+            User user = db.userDao().getUserByEmail(email);
+            runOnUiThread(() -> showSearchResult(user));
+        });
+    }
+
+    private void showSearchResult(User user) {
+        if (user != null) {
+            userAdapter.setUserList(Collections.singletonList(user));
+        } else {
+            Toast.makeText(MainActivity.this, "No user found", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void showClearAllUsers() {
+        runOnUiThread(() -> {
+            userAdapter.clearAllUsers(); // Clear the RecyclerView in the adapter
+        });
+    }
+    private void clearAllUsers() {
+        presenter.clearAllUsers(); // Trigger the clear action in the presenter
+    }
 
     @Override
     public void showUserAdded(User user) {

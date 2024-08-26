@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -58,7 +57,8 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
 
     @SuppressLint("NotifyDataSetChanged")
     public void setUserList(List<User> users) {
-        this.users = users;
+        this.users.clear();  // Clear the existing users before setting the new list
+        this.users.addAll(users);
         notifyDataSetChanged();
     }
 
@@ -66,13 +66,6 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
         int startPosition = this.users.size();
         this.users.addAll(users);
         notifyItemRangeInserted(startPosition, users.size());
-    }
-
-    public User getLastUser() {
-        if (users != null && !users.isEmpty()) {
-            return users.get(users.size() - 1);
-        }
-        return null;
     }
 
     public void addUser(User user) {
@@ -88,12 +81,9 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
         }
     }
 
-    public void updateUser(User user) {
-        int position = users.indexOf(user);
-        if (position >= 0) {
-            users.set(position, user);
-            notifyItemChanged(position);
-        }
+    public void clearAllUsers() {
+        users.clear();
+        notifyDataSetChanged();
     }
 
     public int getUserPosition(User user) {

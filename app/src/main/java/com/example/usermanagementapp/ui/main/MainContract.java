@@ -11,9 +11,12 @@ public interface MainContract {
         void showUserUpdated(User user);
         void showUserDeleted(User user);
         void showError(String message);
+        void showClearAllUsers();
+
     }
 
     interface Presenter {
+        void clearAllUsers();
         void loadUsers(int  page);
         void addUser(User user);
         void updateUser(User user);

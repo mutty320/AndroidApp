@@ -43,7 +43,4 @@ public interface UserDao {
     @Query("SELECT * FROM User WHERE email = :email LIMIT 1")
     User getUserByEmail(String email);
 
-    @Query("SELECT * FROM User LIMIT :limit OFFSET :offset")
-    List<User> getUsersWithLimitAndOffset(int limit, int offset);
-
 }

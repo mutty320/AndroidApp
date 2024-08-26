@@ -1,6 +1,5 @@
 <resources>
-    <string name="app_name">UserManagementApp</string>
-    <string name="add_user">Add User</string>
+    <string name="app_name">User App</string>
     <string name="delete_user">Delete User</string>
     <string name="update_user">Update User</string>
 

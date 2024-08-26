@@ -44,9 +44,9 @@ public class MainPresenter implements MainContract.Presenter {
     public void loadUsers(int page) {
         boolean isFirstRun = sharedPreferences.getBoolean("isFirstRun", true);
         if (isFirstRun) {
-            loadUsersFromApi(1);  // Start loading users from API, starting at page 1
+            loadUsersFromApi(1);
         } else {
-            loadUsersFromDatabase(page, PAGE_SIZE);  // Load users from the database if it's not the first run
+            loadUsersFromDatabase(page, PAGE_SIZE);
         }
     }
 
@@ -99,9 +99,6 @@ public class MainPresenter implements MainContract.Presenter {
         });
     }
 
-
-
-
     @Override
     public void updateUser(User user) {
         Executors.newSingleThreadExecutor().execute(() -> {
@@ -131,7 +128,6 @@ public class MainPresenter implements MainContract.Presenter {
         });
     }
     private boolean validateUser(User user) {
-        // Check if the user already exists by name combination or email
         User existingUserByName = db.userDao().getUserByFullName(user.getFirstName(), user.getLastName());
         User existingUserByEmail = db.userDao().getUserByEmail(user.getEmail());
 
@@ -156,7 +152,6 @@ public class MainPresenter implements MainContract.Presenter {
                 return; // Stop further execution if validation fails
             }
 
-            // Proceed with adding the user via the API
             UserRequest userRequest = new UserRequest(user.getFirstName() + " " + user.getLastName(), user.getJob());
             api.createUser(userRequest).enqueue(new Callback<UserResponse>() {
                 @Override
@@ -165,14 +160,13 @@ public class MainPresenter implements MainContract.Presenter {
                         long newUserId = response.body().getId();
 
                         Executors.newSingleThreadExecutor().execute(() -> {
-                            // Check if the user ID already exists before inserting
                             if (db.userDao().getUserById((int) newUserId) == null) {
                                 user.setId(newUserId);
                                 user.setAvatar(UserUtils.generateAvatarUrl(user.getId()));
                                 db.userDao().insert(user);
                                 runOnMainThread(() -> {
                                     view.showUserAdded(user);
-                                    view.showError("User added successfully"); // Show success message here
+                                    view.showError("User added successfully");
                                 });
                             } else {
                                 runOnMainThread(() -> view.showError("User ID already exists."));
@@ -197,13 +191,11 @@ public class MainPresenter implements MainContract.Presenter {
         Executors.newSingleThreadExecutor().execute(() -> {
             long userId = user.getId();
 
-            // Now, make the API call to delete the user by ID
             api.deleteUser(userId).enqueue(new Callback<Void>() {
 
                 @Override
                 public void onResponse(Call<Void> call, Response<Void> response) {
                     if (response.isSuccessful()) {
-                        // If successful, delete the user locally
                         Executors.newSingleThreadExecutor().execute(() -> {
                             db.userDao().delete(user);
                             runOnMainThread(() -> view.showUserDeleted(user));
@@ -221,7 +213,13 @@ public class MainPresenter implements MainContract.Presenter {
         });
     }
 
-
+    @Override
+    public void clearAllUsers() {
+        Executors.newSingleThreadExecutor().execute(() -> {
+            db.userDao().clearAll();
+            runOnMainThread(() -> view.showClearAllUsers());
+        });
+    }
     private void runOnMainThread(Runnable runnable) {
         mainThreadHandler.post(runnable);
     }

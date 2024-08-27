@@ -11,7 +11,6 @@ import android.widget.EditText;
 import android.widget.Toast;
 import androidx.appcompat.widget.Toolbar;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -37,14 +36,13 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
     private int currentPage = 1;
     private boolean isLoading = false;
     private boolean isResetting = false;
-    private SharedPreferences sharedPreferences;
     AppDatabase db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        // Set up the toolbar
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         recyclerView = findViewById(R.id.recyclerView);
@@ -53,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
 
         db = AppDatabase.getDatabase(this);
 
-        sharedPreferences = getSharedPreferences("UserManagementAppPrefs", MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getSharedPreferences("UserManagementAppPrefs", MODE_PRIVATE);
         presenter = new MainPresenter(this, db, sharedPreferences);
 
         userAdapter = new UserAdapter(presenter, this::showUpdateForm);
@@ -65,17 +63,14 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
     }
 
     private void showAddUserForm() {
-        // Inflate the add user form
         LayoutInflater inflater = LayoutInflater.from(this);
         View formView = inflater.inflate(R.layout.dialog_update_user, null);
 
-        // Set up the form fields
         EditText firstNameEditText = formView.findViewById(R.id.editTextFirst_Name);
         EditText lastNameEditText = formView.findViewById(R.id.editTextLast_Name);
         EditText jobEditText = formView.findViewById(R.id.editTextJob);
         EditText emailEditText = formView.findViewById(R.id.editTextEmail);
 
-        // Show the dialog
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle("Add User")
                 .setView(formView)
@@ -86,15 +81,14 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
         dialog.setOnShowListener(d -> {
             Button saveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
             saveButton.setOnClickListener(v -> {
-                // Validate form before proceeding
+
                 if (validateForm(firstNameEditText, lastNameEditText, jobEditText, emailEditText)) {
-                    // Collect the user input
+
                     String firstName = firstNameEditText.getText().toString();
                     String lastName = lastNameEditText.getText().toString();
                     String job = jobEditText.getText().toString();
                     String email = emailEditText.getText().toString();
 
-                    // Create a new user and call the presenter to add it
                     User newUser = new User();
                     newUser.setFirstName(firstName);
                     newUser.setLastName(lastName);
@@ -103,10 +97,8 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
 
                     presenter.addUser(newUser);
 
-                    // Close the dialog
                     dialog.dismiss();
                 } else {
-                    // Show a general error message if validation fails
                     Toast.makeText(MainActivity.this, "Please correct the errors", Toast.LENGTH_SHORT).show();
                 }
             });
@@ -116,7 +108,6 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
     }
 
     private void showUpdateForm(User user) {
-        // Inflate the update user form
         View formView = getLayoutInflater().inflate(R.layout.dialog_update_user, null);
         EditText updateFirstNameEditText = formView.findViewById(R.id.editTextFirst_Name);
         EditText updateLastNameEditText = formView.findViewById(R.id.editTextLast_Name);
@@ -149,10 +140,8 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
                     presenter.updateUser(user);
                     Toast.makeText(MainActivity.this, "User updated successfully", Toast.LENGTH_SHORT).show();
 
-                    // Close the dialog
                     dialog.dismiss();
                 } else {
-                    // Show a general error message if validation fails
                     Toast.makeText(MainActivity.this, "Please correct the errors", Toast.LENGTH_SHORT).show();
                 }
             });
@@ -164,7 +153,6 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
     private boolean validateForm(EditText firstNameEditText, EditText lastNameEditText, EditText jobEditText, EditText emailEditText) {
         boolean isValid = true;
 
-        // Validate first name
         if (firstNameEditText.getText().toString().trim().isEmpty()) {
             firstNameEditText.setError("First Name is required");
             isValid = false;
@@ -173,7 +161,6 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
             isValid = false;
         }
 
-        // Validate last name
         if (lastNameEditText.getText().toString().trim().isEmpty()) {
             lastNameEditText.setError("Last Name is required");
             isValid = false;
@@ -182,7 +169,6 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
             isValid = false;
         }
 
-        // Validate job
         if (jobEditText.getText().toString().trim().isEmpty()) {
             jobEditText.setError("Job is required");
             isValid = false;
@@ -191,7 +177,6 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
             isValid = false;
         }
 
-        // Validate email
         if (emailEditText.getText().toString().trim().isEmpty()) {
             emailEditText.setError("Email is required");
             isValid = false;
@@ -277,15 +262,12 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
     }
 
     private void showSearchUserDialog() {
-        // Inflate the search user dialog
         LayoutInflater inflater = LayoutInflater.from(this);
         View formView = inflater.inflate(R.layout.dialog_search_user, null);
 
-        // Set up the form fields
         EditText searchNameEditText = formView.findViewById(R.id.searchNameEditText);
         EditText searchEmailEditText = formView.findViewById(R.id.searchEmailEditText);
 
-        // Show the dialog
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle("Search User")
                 .setView(formView)

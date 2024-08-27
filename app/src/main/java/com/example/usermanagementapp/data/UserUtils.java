@@ -1,5 +1,7 @@
 package com.example.usermanagementapp.data;
 
+import android.annotation.SuppressLint;
+
 import java.util.Random;
 
 public class UserUtils {
@@ -8,12 +10,11 @@ public class UserUtils {
     private static final int MAX_AVATAR_ID = 78;
     private static final Random RANDOM = new Random(); // Reusable instance
 
-    // Method to generate a random gender
     private static String getRandomGender() {
         return RANDOM.nextBoolean() ? "male" : "female";
     }
 
-    // Method to generate the avatar URL
+    @SuppressLint("DefaultLocale")
     public static String generateAvatarUrl(long userId) {
         int avatarId = (int) (userId % MAX_AVATAR_ID);
         String gender = getRandomGender();

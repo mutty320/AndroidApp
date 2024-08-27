@@ -3,8 +3,6 @@ package com.example.usermanagementapp.ui.main;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -46,14 +44,14 @@ public class MainPresenter implements MainContract.Presenter {
         if (isFirstRun) {
             loadUsersFromApi(1);
         } else {
-            loadUsersFromDatabase(page, PAGE_SIZE);
+            loadUsersFromDatabase(page);
         }
     }
 
     private void loadUsersFromApi(int page) {
         api.getUsers(page).enqueue(new Callback<UsersResponse>() {
             @Override
-            public void onResponse(Call<UsersResponse> call, Response<UsersResponse> response) {
+            public void onResponse(@NonNull Call<UsersResponse> call, @NonNull Response<UsersResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     List<User> usersFromApi = response.body().getData();
                     Executors.newSingleThreadExecutor().execute(() -> {
@@ -69,7 +67,7 @@ public class MainPresenter implements MainContract.Presenter {
                             loadUsersFromApi(page + 1);
                         } else {
                             // Once all pages are loaded, load from the database and show in UI
-                            loadUsersFromDatabase(1, PAGE_SIZE);
+                            loadUsersFromDatabase(1);
                             sharedPreferences.edit().putBoolean("isFirstRun", false).apply();
                         }
                     });
@@ -85,10 +83,10 @@ public class MainPresenter implements MainContract.Presenter {
         });
     }
 
-    private void loadUsersFromDatabase(int page, int pageSize) {
-        int offset = (page - 1) * pageSize;
+    private void loadUsersFromDatabase(int page) {
+        int offset = (page - 1) * MainPresenter.PAGE_SIZE;
         Executors.newSingleThreadExecutor().execute(() -> {
-            List<User> users = db.userDao().getUsersByPage(offset, pageSize);
+            List<User> users = db.userDao().getUsersByPage(offset, MainPresenter.PAGE_SIZE);
             runOnMainThread(() -> {
                 if (users.isEmpty()) {
                     view.showError("No more users to load");
@@ -105,7 +103,7 @@ public class MainPresenter implements MainContract.Presenter {
             UserRequest userRequest = new UserRequest(user.getFirstName(), user.getJob());
             api.updateUser(user.getId(), userRequest).enqueue(new Callback<UpdateResponse>() {
                 @Override
-                public void onResponse(Call<UpdateResponse> call, Response<UpdateResponse> response) {
+                public void onResponse(@NonNull Call<UpdateResponse> call, @NonNull Response<UpdateResponse> response) {
                     if (response.isSuccessful() && response.body() != null) {
                         UpdateResponse updatedUser = response.body();
                         user.setFirstName(updatedUser.getName());
@@ -121,7 +119,7 @@ public class MainPresenter implements MainContract.Presenter {
                 }
 
                 @Override
-                public void onFailure(Call<UpdateResponse> call, Throwable t) {
+                public void onFailure(@NonNull Call<UpdateResponse> call, @NonNull Throwable t) {
                     runOnMainThread(() -> view.showError("API call failed: " + t.getMessage()));
                 }
             });
@@ -155,7 +153,7 @@ public class MainPresenter implements MainContract.Presenter {
             UserRequest userRequest = new UserRequest(user.getFirstName() + " " + user.getLastName(), user.getJob());
             api.createUser(userRequest).enqueue(new Callback<UserResponse>() {
                 @Override
-                public void onResponse(Call<UserResponse> call, Response<UserResponse> response) {
+                public void onResponse(@NonNull Call<UserResponse> call, @NonNull Response<UserResponse> response) {
                     if (response.isSuccessful() && response.body() != null) {
                         long newUserId = response.body().getId();
 
@@ -178,13 +176,12 @@ public class MainPresenter implements MainContract.Presenter {
                 }
 
                 @Override
-                public void onFailure(Call<UserResponse> call, Throwable t) {
+                public void onFailure(@NonNull Call<UserResponse> call, @NonNull Throwable t) {
                     runOnMainThread(() -> view.showError("API call failed: " + t.getMessage()));
                 }
             });
         });
     }
-
 
     @Override
     public void deleteUser(User user) {
@@ -194,7 +191,7 @@ public class MainPresenter implements MainContract.Presenter {
             api.deleteUser(userId).enqueue(new Callback<Void>() {
 
                 @Override
-                public void onResponse(Call<Void> call, Response<Void> response) {
+                public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
                     if (response.isSuccessful()) {
                         Executors.newSingleThreadExecutor().execute(() -> {
                             db.userDao().delete(user);
@@ -206,7 +203,7 @@ public class MainPresenter implements MainContract.Presenter {
                 }
 
                 @Override
-                public void onFailure(Call<Void> call, Throwable t) {
+                public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
                     runOnMainThread(() -> view.showError("API call failed: " + t.getMessage()));
                 }
             });
@@ -217,7 +214,7 @@ public class MainPresenter implements MainContract.Presenter {
     public void clearAllUsers() {
         Executors.newSingleThreadExecutor().execute(() -> {
             db.userDao().clearAll();
-            runOnMainThread(() -> view.showClearAllUsers());
+            runOnMainThread(view::showClearAllUsers);
         });
     }
     private void runOnMainThread(Runnable runnable) {

@@ -7,13 +7,6 @@ public class UserResponse {
     private String id;
     private String createdAt;
 
-
-//    public UserResponse(String name, String job, int id) {
-//        this.name = name;
-//        this.job = job;
-//        this.id = id;
-//    }
-
     public String getName() {
         return name;
     }

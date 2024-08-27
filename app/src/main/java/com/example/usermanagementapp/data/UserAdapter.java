@@ -16,9 +16,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
-    private List<User> users;
-    private MainContract.Presenter presenter;
-    private UpdateUserCallback updateUserCallback;
+    private final List<User> users;
+    private final MainContract.Presenter presenter;
+    private final UpdateUserCallback updateUserCallback;
 
     public UserAdapter(MainContract.Presenter presenter, UpdateUserCallback updateUserCallback) {
         this.presenter = presenter;
@@ -81,6 +81,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     public void clearAllUsers() {
         users.clear();
         notifyDataSetChanged();
@@ -104,7 +105,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
         void onUpdateUserClicked(User user);
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public static class ViewHolder extends RecyclerView.ViewHolder {
         public TextView textViewName;
         public ImageView imageView;
         public TextView textViewEmail;

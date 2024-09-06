@@ -19,6 +19,12 @@ This project follows the MVP (Model-View-Presenter) architecture pattern. This s
 - **Android Device**: A physical device or an Android emulator.
 - **APK File**: Download the provided APK file.
 
+### Download APK
+
+Download the latest version of the app from the following link:
+
+[**Download APK**](https://github.com/mutty320/AndroidApp/releases/download/v1.0.0/AndroidApp.apk)
+
 ### Running the Application
 
 1. **Download the APK**: Obtain the APK file from the provided link or directory.
